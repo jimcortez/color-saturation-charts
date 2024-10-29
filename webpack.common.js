@@ -11,13 +11,13 @@ module.exports = {
   },
   module: {
     rules: [
-      {
-        test: /\.(ttf|woff|eot)$/,
-        loader: 'file-loader',
-        options: {
-          name: '[name].[ext]?[hash]'
-        }
-      },
+      // {
+      //   test: /\.(ttf|woff|eot)$/,
+      //   loader: 'file-loader',
+      //   options: {
+      //     name: '[name].[ext]?[hash]'
+      //   }
+      // },
       {
         test: /\.css$/,
         use:['style-loader','css-loader']
