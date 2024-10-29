@@ -36,13 +36,14 @@ function create_saturation_row(title, values) {
   return row_template.content;
 }
 
-function _create_section_node(title, extras) {
+function _create_section_node(title, subtitle, picker) {
   const template = document.createElement('template');
   template.innerHTML = `
         <section data-auto-animate>
             <h4 class="slide-title" data-id="title">${title}</h4>
+            <p class="slide-subtitle" data-id="subtitle">${subtitle}</p>
             <div class="color_rows"></div>
-            ${extras || ""}
+            ${picker || ""}
         </section>`
   return template
 }
@@ -79,20 +80,22 @@ function _get_complementary_color(color, mix_type) {
     let i = new Iris(_color_to_rgba(color))
     let compl_iris = i.rybComplementary()
     return new Color(compl_iris.cssString())
-  } else if (mix_type === "light") {
+  } else {
     // https://github.com/color-js/color.js/issues/140
     let complement = color.to('lch')
     complement.lch.hue += 180
     return complement
-  } else {
-    throw new Error('Unknown mix type: ' + mix_type);
   }
+}
+
+function _get_greyscale(color) {
+  return new Color(color).to('hsl').set({s: 0})
 }
 
 function create_custom_saturation_slide(colorConfig) {
   const configColor = colorConfig.color
 
-  const slide_template = _create_section_node(`Saturation Chart`, `<input id="custom_color_picker" data-id="picker" data-jscolor="{}" value="${_color_to_rgba(configColor)}" />`)
+  const slide_template = _create_section_node(`Saturation Chart`, colorConfig.subtitle || "", `<input id="custom_color_picker" data-id="picker" data-jscolor="{}" value="${_color_to_rgba(configColor)}" />`)
   const picker = new JSColor(slide_template.content.firstElementChild.querySelector('#custom_color_picker'), {
     preset: "dark large thick",
     format: 'rgba'
@@ -118,8 +121,6 @@ function create_custom_saturation_slide(colorConfig) {
     slide_template_node.querySelector('.slide-title').innerHTML = `${name}`
     slide_template_node.querySelector('.color_rows').innerHTML = '';
 
-    const steps = 15
-
     let matchTransparent = new Color(mainColor)
     matchTransparent.alpha = 0
 
@@ -142,6 +143,19 @@ function create_custom_saturation_slide(colorConfig) {
   return slide_template.content
 }
 
+function getRandomBackgroundGradient() {
+  const randomColorConfig = color_config[Math.floor(Math.random() * color_config.length)];
+  const randomColor = randomColorConfig[Math.floor(Math.random() * randomColorConfig.length)].color
+  return `radial-gradient(farthest-corner at 40px 40px, #fff, ${randomColor.display()},${_get_complementary_color(randomColor).display()}, ${_get_greyscale(randomColor).display()})`
+}
+
+function setMainBG(sync){
+  let titleSlideElem = document.getElementById('title-slide')
+  titleSlideElem.setAttribute('data-background-gradient', getRandomBackgroundGradient())
+
+  if(sync !== false) Reveal.sync();
+}
+
 let slideElem = document.getElementById('slides')
 
 color_config.forEach(subColors => {
@@ -152,7 +166,9 @@ color_config.forEach(subColors => {
   slideElem.appendChild(sectionElem)
 })
 
-let titleSlideElem = document.getElementById('title-slide')
-// titleSlideElem.setAttribute('data-background-gradient', `radial-gradient(farthest-corner at 40px 40px, #fff, ${randomColor.display()},${backgroundColor.clone().complement().toHexString()}, ${backgroundColor.clone().greyscale().toHexString()})`)
+setMainBG(false)
+setInterval(setMainBG, 5000)
 
 Reveal.initialize();
+
+
