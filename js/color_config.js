@@ -1,50 +1,34 @@
 import Color from "colorjs.io";
-import spectral from 'spectral.js'
+import {mixPaint} from "./color_utils";
 
 export const step_count = 15;
 
+const red = () => new Color("rgb(255,0,0)")
 const cadmiumRed = () => new Color("rgb(255,39,2)")
 const quinacridoneRed = () => new Color("rgb(210,44,60)")
 
+const yellow = ()=>  new Color("rgb(255,255,0)")
 const cadmiumYellow = () => new Color("rgb(254, 236, 0)")
 const hansaYellow = () => new Color("rgb(252, 211, 0)")
 
+const blue = () => new Color("rgb(0,0,255)")
 const cobaltBlue = () => new Color("rgb(0,33,133)")
 const ultramarineBlue = () => new Color("rgb(25,0,89)")
 
-export function color_to_rgba(color) {
-  return color.to('sRGB').toString({
-    precision: 0,
-    format: {
-      name: "rgb",
-      commas: true,
-      coords: [
-        "<number>[0, 255]",
-        "<number>[0, 255]",
-        "<number>[0, 255]",
-        "<alpha>"
-      ]
-    }
-  })
-}
-
-function mixPaint(c1, c2, ratio){
-  return new Color(spectral.mix(color_to_rgba(c1), color_to_rgba(c2), ratio || 0.5, spectral.RGBA))
-}
 
 export const color_config = [
   [
-    {display_name: "Red (Light, sRGB)", color: new Color("red"), mix_type: "light"},
+    {display_name: "Red (Light, sRGB)", color: red(), mix_type: "light"},
     {display_name: "Red (Paint, Mineral)", subtitle: "Cadmium Red", color: cadmiumRed(), mix_type: "paint"},
     {display_name: "Red (Paint, Organic)", subtitle: "Quinacridone Red", color: quinacridoneRed(), mix_type: "paint"}
   ],
   [
-    {display_name: "Yellow (Light, sRGB)", color: new Color("yellow"), mix_type: "light"},
+    {display_name: "Yellow (Light, sRGB)", color: yellow(), mix_type: "light"},
     {display_name: "Yellow (Paint, Mineral)", subtitle: 'Cadmium Yellow', color: cadmiumYellow(), mix_type: "paint"},
     {display_name: "Yellow (Paint, Organic)", subtitle: 'Hansa Yellow', color: hansaYellow(), mix_type: "paint"}
   ],
   [
-    {display_name: "Blue (Light, sRGB)", color: new Color("blue"), mix_type: "light"},
+    {display_name: "Blue (Light, sRGB)", color: blue(), mix_type: "light"},
     {display_name: "Blue (Paint, Mineral)", subtitle: 'Cobalt Blue', color: cobaltBlue(), mix_type: "paint"},
     {display_name: "Blue (Paint, Organic)", subtitle: 'Ultramarine Blue', color: ultramarineBlue(), mix_type: "paint"}
   ],

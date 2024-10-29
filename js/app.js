@@ -1,12 +1,17 @@
 import Reveal from 'reveal.js'
 import 'reveal.js/dist/reveal.css'
 import 'reveal.js/dist/theme/white.css'
-import spectral from 'spectral.js'
-import {Iris} from '@scidian/iris';
 import Color from "colorjs.io"
 import namer from 'color-namer'
 import {color_config, step_count} from "./color_config";
 import JSColor from '@eastdesire/jscolor'
+import {
+  get_color_sequence,
+  get_complementary_color,
+  get_greyscale_color,
+  color_to_rgba,
+  get_transparent_color
+} from "./color_utils";
 
 function create_saturation_row(title, values) {
   const template = document.createElement('template');
@@ -48,54 +53,10 @@ function _create_section_node(title, subtitle, picker) {
   return template
 }
 
-function _color_to_rgba(color) {
-  return color.to('sRGB').toString({
-    precision: 0,
-    format: {
-      name: "rgb",
-      commas: true,
-      coords: [
-        "<number>[0, 255]",
-        "<number>[0, 255]",
-        "<number>[0, 255]",
-        "<alpha>"
-      ]
-    }
-  })
-}
-
-function _get_color_sequence(start, end, steps, mix_type) {
-  if (mix_type === "paint") {
-    return spectral.palette(_color_to_rgba(start), _color_to_rgba(end), steps, spectral.RGBA).map(c => new Color(c))
-  } else if (mix_type === "light") {
-    return start.steps(end, {steps: steps})
-  } else {
-    throw new Error('Unknown mix type: ' + mix_type);
-  }
-
-}
-
-function _get_complementary_color(color, mix_type) {
-  if (mix_type === "paint") {
-    let i = new Iris(_color_to_rgba(color))
-    let compl_iris = i.rybComplementary()
-    return new Color(compl_iris.cssString())
-  } else {
-    // https://github.com/color-js/color.js/issues/140
-    let complement = color.to('lch')
-    complement.lch.hue += 180
-    return complement
-  }
-}
-
-function _get_greyscale(color) {
-  return new Color(color).to('hsl').set({s: 0})
-}
-
 function create_custom_saturation_slide(colorConfig) {
   const configColor = colorConfig.color
 
-  const slide_template = _create_section_node(`Saturation Chart`, colorConfig.subtitle || "", `<input id="custom_color_picker" data-id="picker" data-jscolor="{}" value="${_color_to_rgba(configColor)}" />`)
+  const slide_template = _create_section_node(`Saturation Chart`, colorConfig.subtitle || "", `<input id="custom_color_picker" data-id="picker" data-jscolor="{}" value="${color_to_rgba(configColor)}" />`)
   const picker = new JSColor(slide_template.content.firstElementChild.querySelector('#custom_color_picker'), {
     preset: "dark large thick",
     format: 'rgba'
@@ -113,29 +74,33 @@ function create_custom_saturation_slide(colorConfig) {
     colorSet = true
 
     let name = colorConfig.display_name
-    console.log(_color_to_rgba(configColor), _color_to_rgba(mainColor))
-    if (_color_to_rgba(configColor) !== _color_to_rgba(mainColor)) {
+    let subtitle = colorConfig.subtitle || ""
+
+    if (color_to_rgba(configColor) !== color_to_rgba(mainColor)) {
       name = namer(mainColor.toString({format: "hex"})).basic[0].name;
+      subtitle = `Light ${name.display()}`
     }
 
     slide_template_node.querySelector('.slide-title').innerHTML = `${name}`
+    slide_template_node.querySelector('.slide-subtitle').innerHTML = `${subtitle}`
     slide_template_node.querySelector('.color_rows').innerHTML = '';
 
-    let matchTransparent = new Color(mainColor)
-    matchTransparent.alpha = 0
-
-    let grayscale = new Color(mainColor).to('hsl').set({s: 0})
-
-    let rows = [
-      create_saturation_row('Dilution', _get_color_sequence(mainColor, matchTransparent, step_count, colorConfig["mix_type"])),
-      create_saturation_row('Tinting', _get_color_sequence(mainColor, new Color("white"), step_count, colorConfig["mix_type"])),
-      create_saturation_row('Toning', _get_color_sequence(mainColor, new Color("grey"), step_count, colorConfig["mix_type"])),
-      create_saturation_row('Shading', _get_color_sequence(mainColor, new Color("black"), step_count, colorConfig["mix_type"])),
-      create_saturation_row('Value', _get_color_sequence(mainColor, _get_complementary_color(mainColor, colorConfig["mix_type"]), step_count, colorConfig["mix_type"])),
-      create_saturation_row('Mix', _get_color_sequence(mainColor, grayscale, 2, colorConfig["mix_type"])),
-    ]
-
-    rows.forEach(row => slide_template_node.querySelector('.color_rows').appendChild(row))
+    ([
+      create_saturation_row('Dilution',
+        get_color_sequence(mainColor, get_transparent_color(mainColor), step_count, colorConfig["mix_type"])),
+      create_saturation_row('Tinting',
+        get_color_sequence(mainColor, new Color("white"), step_count, colorConfig["mix_type"])),
+      create_saturation_row('Toning',
+        get_color_sequence(mainColor, new Color("grey"), step_count, colorConfig["mix_type"])),
+      create_saturation_row('Shading',
+        get_color_sequence(mainColor, new Color("black"), step_count, colorConfig["mix_type"])),
+      create_saturation_row('Value',
+        get_color_sequence(mainColor, get_complementary_color(mainColor, colorConfig["mix_type"]), step_count, colorConfig["mix_type"])),
+      create_saturation_row('Mix',
+        get_color_sequence(mainColor, get_greyscale_color(mainColor), 2, colorConfig["mix_type"])),
+    ]).forEach(row => {
+      slide_template_node.querySelector('.color_rows').appendChild(row)
+    })
   }
 
   picker.onChange()
@@ -146,14 +111,14 @@ function create_custom_saturation_slide(colorConfig) {
 function getRandomBackgroundGradient() {
   const randomColorConfig = color_config[Math.floor(Math.random() * color_config.length)];
   const randomColor = randomColorConfig[Math.floor(Math.random() * randomColorConfig.length)].color
-  return `radial-gradient(farthest-corner at 40px 40px, #fff, ${randomColor.display()},${_get_complementary_color(randomColor).display()}, ${_get_greyscale(randomColor).display()})`
+  return `radial-gradient(farthest-corner at 40px 40px, #fff, ${randomColor.display()},${get_complementary_color(randomColor).display()}, ${get_greyscale_color(randomColor).display()})`
 }
 
-function setMainBG(sync){
+function setMainBG(sync) {
   let titleSlideElem = document.getElementById('title-slide')
   titleSlideElem.setAttribute('data-background-gradient', getRandomBackgroundGradient())
 
-  if(sync !== false) Reveal.sync();
+  if (sync !== false) Reveal.sync();
 }
 
 let slideElem = document.getElementById('slides')
