@@ -12,7 +12,7 @@ const cadmiumYellow = () => new Color("rgb(254, 236, 0)")
 const hansaYellow = () => new Color("rgb(252, 211, 0)")
 
 const blue = () => new Color("rgb(0,0,255)")
-const cobaltBlue = () => new Color("rgb(0,33,133)")
+const cobaltBlue = () => new Color("rgb(1,30,156)")
 const ultramarineBlue = () => new Color("rgb(25,0,89)")
 
 

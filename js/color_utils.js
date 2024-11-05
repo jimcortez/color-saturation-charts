@@ -39,14 +39,14 @@ export function get_complementary_color(color, mix_type) {
     return new Color(compl_iris.cssString())
   } else {
     // https://github.com/color-js/color.js/issues/140
-    let complement = color.to('lch')
+    let complement = (new Color(color)).to('lch')
     complement.lch.hue += 180
     return complement
   }
 }
 
 export function get_greyscale_color(color) {
-  return new Color(color).to('hsl').set({s: 0})
+  return new Color(color).to('hsl').set({s: 0});
 }
 
 export function get_transparent_color(color) {

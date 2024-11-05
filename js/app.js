@@ -17,7 +17,7 @@ function create_saturation_row(title, values) {
   const template = document.createElement('template');
   template.innerHTML = `
         <div class="r-hstack justify-center" data-id="colorboxes">
-            <div style="width: 200px;" data-id="colortitle">${title}</div>
+            <div style="width: 320px;" data-id="colortitle">${title}</div>
         </div>
     `
   let row_template = template.cloneNode(true)
@@ -78,7 +78,7 @@ function create_custom_saturation_slide(colorConfig) {
 
     if (color_to_rgba(configColor) !== color_to_rgba(mainColor)) {
       name = namer(mainColor.toString({format: "hex"})).basic[0].name;
-      subtitle = `Light ${name.display()}`
+      subtitle = `Light ${name}`
     }
 
     slide_template_node.querySelector('.slide-title').innerHTML = `${name}`
@@ -94,9 +94,9 @@ function create_custom_saturation_slide(colorConfig) {
         get_color_sequence(mainColor, new Color("grey"), step_count, colorConfig["mix_type"])),
       create_saturation_row('Shading',
         get_color_sequence(mainColor, new Color("black"), step_count, colorConfig["mix_type"])),
-      create_saturation_row('Value',
+      create_saturation_row('Complementary',
         get_color_sequence(mainColor, get_complementary_color(mainColor, colorConfig["mix_type"]), step_count, colorConfig["mix_type"])),
-      create_saturation_row('Mix',
+      create_saturation_row('Grayscale',
         get_color_sequence(mainColor, get_greyscale_color(mainColor), 2, colorConfig["mix_type"])),
     ]).forEach(row => {
       slide_template_node.querySelector('.color_rows').appendChild(row)
@@ -134,6 +134,8 @@ color_config.forEach(subColors => {
 setMainBG(false)
 setInterval(setMainBG, 5000)
 
-Reveal.initialize();
+Reveal.initialize({
+  navigationMode: 'grid'
+});
 
 
