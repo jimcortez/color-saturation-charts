@@ -3,7 +3,7 @@ import spectral from "spectral.js";
 import {Iris} from "@scidian/iris";
 
 export function color_to_rgba(color) {
-  return color.to('sRGB').toString({
+  return new Color(color).to('sRGB').toString({
     precision: 0,
     format: {
       name: "rgb",
@@ -46,7 +46,7 @@ export function get_complementary_color(color, mix_type) {
 }
 
 export function get_greyscale_color(color) {
-  return new Color(color).to('hsl').set({s: 0});
+  return new Color(color).to('lab').set({a: 0, b: 0}).to('sRGB');
 }
 
 export function get_transparent_color(color) {
